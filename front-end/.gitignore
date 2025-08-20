@@ -1,1 +1,25 @@
 .qodo
+
+.DS_Store
+*.log
+
+node_modules
+dist
+build
+coverage
+.env
+.DS_Store
+npm-debug.log
+yarn-error.log
+.vscode
+.idea
+*.sublime-workspace
+*.sublime-project
+*.log
+*.tmp
+*.bak
+*.swp
+*.orig
+
+# next.js
+.next
