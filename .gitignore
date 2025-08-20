@@ -1,0 +1,10 @@
+.DS_Store
+.vscode
+.idea
+*.sublime-workspace
+*.sublime-project
+*.log
+*.tmp
+*.bak
+*.swp
+*.orig
