@@ -12,8 +12,8 @@ Route::get("health", function () {
 });
 
 
-Route::post('login', [class, 'login']);
-Route::post('logout', [class, 'logout'])->middleware('auth:sanctum');
+Route::post('login', [AuthenticationController::class, 'login']);
+Route::post('logout', [AuthenticationController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::post('password/forgot', [PasswordResetController::class, 'forgotPassword']);
 Route::post('password/reset', [PasswordResetController::class, 'resetPassword']);
