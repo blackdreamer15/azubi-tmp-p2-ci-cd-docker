@@ -3,6 +3,10 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
+# Accept build arguments
+ARG SECRET_COOKIE_PASSWORD
+ENV SECRET_COOKIE_PASSWORD=$SECRET_COOKIE_PASSWORD
+
 # Copy package files
 COPY package*.json ./
 
