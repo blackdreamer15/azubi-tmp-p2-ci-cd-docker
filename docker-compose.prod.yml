@@ -1,0 +1,88 @@
+services:
+  # Database
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: laravel_app
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: laravel_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Laravel Backend (Using Docker Hub Image)
+  backend:
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-backend:latest
+    volumes:
+      - ./back-end:/var/www/html
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      APP_NAME: Laravel
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: laravel_app
+      DB_USERNAME: laravel_user
+      DB_PASSWORD: laravel_password
+      CACHE_DRIVER: redis
+      SESSION_DRIVER: redis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Nginx for Laravel (Using Docker Hub Image)
+  nginx:
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./back-end:/var/www/html
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Next.js Frontend (Using Docker Hub Image)
+  frontend:
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-frontend:latest
+    ports:
+      - "3000:3000"
+    environment:
+      APP_NAME: "CLMS"
+      BACKEND_API_HOST: http://nginx
+      NEXT_PUBLIC_BACKEND_API_HOST: http://localhost:8000
+      SECRET_COOKIE_PASSWORD: okp2oJszqs/cgn+NQhIQ+Q9JCMHHUG/yVgHnqP09u2k=
+    depends_on:
+      - nginx
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    driver: bridge
