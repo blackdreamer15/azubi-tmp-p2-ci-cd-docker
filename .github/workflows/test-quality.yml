@@ -35,6 +35,8 @@ jobs:
       - name: Build Frontend application
         working-directory: ./front-end
         run: npm run build
+        env:
+          SECRET_COOKIE_PASSWORD: ${{ secrets.SECRET_COOKIE_PASSWORD }}
 
   # Job 2: Backend Code Quality
   backend-quality:
