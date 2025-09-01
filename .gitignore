@@ -28,9 +28,6 @@ Thumbs.db
 .env.test.local
 .env.production.local
 
-# Docker
-.dockerignore
-
 # Node modules (if any in root)
 node_modules/
 
