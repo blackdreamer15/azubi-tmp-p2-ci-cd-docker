@@ -107,6 +107,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            UID=1000
+            GID=1000
+            USER=laravel
 
   # Job 3: Build and Push Nginx
   build-nginx:
@@ -148,6 +152,10 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+          build-args: |
+            UID=1000
+            GID=1000
+            USER=laravel
 
   # Job 4: Notify Success
   notify-success:

@@ -1,8 +1,8 @@
 FROM php:8.3-fpm-alpine3.21
 
-ARG UID
-ARG GID
-ARG USER
+ARG UID=1000
+ARG GID=1000
+ARG USER=laravel
 
 ENV UID=${UID}
 ENV GID=${GID}

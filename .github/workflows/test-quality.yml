@@ -93,10 +93,10 @@ jobs:
           docker build --no-cache -f front-end/Dockerfile front-end --dry-run 2>/dev/null || docker build -t test-frontend -f front-end/Dockerfile front-end --build-arg SECRET_COOKIE_PASSWORD="${{ secrets.SECRET_COOKIE_PASSWORD }}"
 
           echo "✅ Checking Backend Dockerfile..."
-          docker build --no-cache -f back-end/dockerfiles/php.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-backend -f back-end/dockerfiles/php.dockerfile back-end
+          docker build --no-cache -f back-end/dockerfiles/php.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-backend -f back-end/dockerfiles/php.dockerfile back-end --build-arg UID=1000 --build-arg GID=1000 --build-arg USER=laravel
 
           echo "✅ Checking Nginx Dockerfile..."
-          docker build --no-cache -f back-end/dockerfiles/nginx.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-nginx -f back-end/dockerfiles/nginx.dockerfile back-end
+          docker build --no-cache -f back-end/dockerfiles/nginx.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-nginx -f back-end/dockerfiles/nginx.dockerfile back-end --build-arg UID=1000 --build-arg GID=1000 --build-arg USER=laravel
 
   # Job 4: Security Scanning
   security-scan:
@@ -115,8 +115,16 @@ jobs:
           format: "sarif"
           output: "trivy-results.sarif"
 
+      - name: Run Trivy vulnerability scanner (console output)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
+
       - name: Upload Trivy scan results
         uses: github/codeql-action/upload-sarif@v3
         if: always()
+        continue-on-error: true
         with:
           sarif_file: "trivy-results.sarif"

@@ -1,8 +1,8 @@
 FROM nginx:stable-alpine
 
-ARG UID
-ARG GID
-ARG USER
+ARG UID=1000
+ARG GID=1000
+ARG USER=laravel
 
 ENV UID=${UID}
 ENV GID=${GID}
