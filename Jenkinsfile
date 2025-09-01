@@ -24,9 +24,9 @@ pipeline {
             steps {
                 echo '⚙️ Setting up build environment...'
                 sh '''
-                    echo "Node version: $(node --version)"
+                    echo "Node version: $(node --version)" || echo "Node not available"
                     echo "Docker version: $(docker --version)"
-                    echo "Docker Compose version: $(docker-compose --version)"
+                    echo "Docker Compose version: $(docker compose version)"
                 '''
             }
         }
@@ -70,7 +70,7 @@ pipeline {
                         echo '🐳 Validating Docker configurations...'
                         sh '''
                             # Validate Docker Compose file
-                            docker-compose config
+                            docker compose config
                             echo "✅ Docker Compose configuration is valid"
                         '''
                     }
@@ -157,26 +157,26 @@ pipeline {
                 echo '🚀 Deploying backend services...'
                 sh '''
                     # Stop existing containers
-                    docker-compose -f docker-compose.prod.yml down || true
+                    docker compose down || true
                     
                     # Pull latest images
                     docker pull ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest
                     docker pull ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest
                     
                     # Start services with latest images
-                    docker-compose -f docker-compose.prod.yml up -d mysql redis
+                    docker compose up -d mysql redis
                     
                     # Wait for database to be ready
                     sleep 30
                     
                     # Start backend services
-                    docker-compose -f docker-compose.prod.yml up -d backend nginx
+                    docker compose up -d backend nginx
                     
                     # Wait for services to start
                     sleep 15
                     
                     # Run database migrations
-                    docker-compose -f docker-compose.prod.yml exec -T backend php artisan migrate --force || echo "Migrations skipped"
+                    docker compose exec -T backend php artisan migrate --force || echo "Migrations skipped"
                 '''
             }
         }
@@ -197,7 +197,7 @@ pipeline {
                     fi
                     
                     # Check container status
-                    docker-compose -f docker-compose.prod.yml ps
+                    docker compose ps
                 '''
             }
         }
