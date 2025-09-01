@@ -82,6 +82,7 @@ services:
     environment:
       APP_NAME: "CLMS"
       BACKEND_API_HOST: http://nginx
+      NEXT_PUBLIC_BACKEND_API_HOST: http://localhost:8000
       SECRET_COOKIE_PASSWORD: okp2oJszqs/cgn+NQhIQ+Q9JCMHHUG/yVgHnqP09u2k=
     depends_on:
       - nginx
