@@ -13,6 +13,7 @@ services:
       - mysql_data:/var/lib/mysql
     networks:
       - app-network
+    restart: unless-stopped
 
   # Redis
   redis:
@@ -21,16 +22,11 @@ services:
       - "6379:6379"
     networks:
       - app-network
+    restart: unless-stopped
 
-  # Laravel Backend
+  # Laravel Backend (Using Docker Hub Image)
   backend:
-    build:
-      context: ./back-end
-      dockerfile: dockerfiles/php.dockerfile
-      args:
-        UID: 1000
-        GID: 1000
-        USER: laravel
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-backend:latest
     volumes:
       - ./back-end:/var/www/html
     depends_on:
@@ -38,8 +34,8 @@ services:
       - redis
     environment:
       APP_NAME: Laravel
-      APP_ENV: local
-      APP_DEBUG: "true"
+      APP_ENV: production
+      APP_DEBUG: "false"
       APP_URL: http://localhost:8000
       DB_CONNECTION: mysql
       DB_HOST: mysql
@@ -53,16 +49,11 @@ services:
       REDIS_PORT: 6379
     networks:
       - app-network
+    restart: unless-stopped
 
-  # Nginx for Laravel
+  # Nginx for Laravel (Using Docker Hub Image)
   nginx:
-    build:
-      context: ./back-end
-      dockerfile: dockerfiles/nginx.dockerfile
-      args:
-        UID: 1000
-        GID: 1000
-        USER: laravel
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-nginx:latest
     ports:
       - "8000:80"
     volumes:
@@ -71,12 +62,11 @@ services:
       - backend
     networks:
       - app-network
+    restart: unless-stopped
 
-  # Next.js Frontend
+  # Next.js Frontend (Using Docker Hub Image)
   frontend:
-    build:
-      context: ./front-end
-      dockerfile: Dockerfile
+    image: blackdreamer/azubi-tmp-p2-ci-cd-docker-frontend:latest
     ports:
       - "3000:3000"
     environment:
@@ -88,6 +78,7 @@ services:
       - nginx
     networks:
       - app-network
+    restart: unless-stopped
 
 volumes:
   mysql_data:
