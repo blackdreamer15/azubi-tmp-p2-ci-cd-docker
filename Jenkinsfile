@@ -98,22 +98,14 @@ pipeline {
         }
 
         stage('Build Docker Images') {
-            environment {
-                COMMIT_SHA = ''
-                UID = ''
-                GID = ''
-            }
-            steps {
-                script {
-                    env.COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-                    env.UID = sh(script: 'id -u', returnStdout: true).trim()
-                    env.GID = sh(script: 'id -g', returnStdout: true).trim()
-                }
-            }
-
             parallel {
                 stage('Build Backend Image') {
                     steps {
+                        script {
+                            env.COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            env.UID = sh(script: 'id -u', returnStdout: true).trim()
+                            env.GID = sh(script: 'id -g', returnStdout: true).trim()
+                        }
                         echo '🏗️ Building Laravel backend Docker image...'
                         sh '''
                             cd back-end
@@ -131,6 +123,11 @@ pipeline {
 
                 stage('Build Nginx Image') {
                     steps {
+                        script {
+                            env.COMMIT_SHA = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                            env.UID = sh(script: 'id -u', returnStdout: true).trim()
+                            env.GID = sh(script: 'id -g', returnStdout: true).trim()
+                        }
                         echo '🏗️ Building Nginx Docker image...'
                         sh '''
                             cd back-end
