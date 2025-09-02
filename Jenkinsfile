@@ -261,3 +261,5 @@ pipeline {
         unstable {
             echo '⚠️ Pipeline is unstable. Some tests failed or warnings occurred.'
         }
+  }
+}
