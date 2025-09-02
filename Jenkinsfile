@@ -7,6 +7,7 @@ pipeline {
         BACKEND_IMAGE_NAME = 'azubi-tmp-p2-ci-cd-docker-backend'
         NGINX_IMAGE_NAME = 'azubi-tmp-p2-ci-cd-docker-nginx'
         GIT_REPO = 'https://github.com/blackdreamer15/tmp-azubi-p2-ci-cd-docker.git'
+        PATH = "/usr/local/bin:${env.PATH}"
     }
     
     stages {
@@ -24,10 +25,42 @@ pipeline {
             steps {
                 echo '⚙️ Setting up build environment...'
                 sh '''
-                    echo "Node version: $(node --version 2>/dev/null || echo 'Not available')"
-                    echo "Docker version: $(docker --version 2>/dev/null || echo 'Not available')"
-                    echo "Docker Compose version: $(docker compose version 2>/dev/null || echo 'Not available')"
-                    echo "Git version: $(git --version 2>/dev/null || echo 'Not available')"
+                    echo "Current PATH: $PATH"
+                    echo "Current USER: $(whoami)"
+                    
+                    # Check if Docker is available in common locations
+                    if command -v docker >/dev/null 2>&1; then
+                        echo "✅ Docker found: $(which docker)"
+                        echo "Docker version: $(docker --version)"
+                    elif [ -f "/usr/local/bin/docker" ]; then
+                        echo "✅ Docker found at /usr/local/bin/docker"
+                        export PATH="/usr/local/bin:$PATH"
+                        echo "Docker version: $(/usr/local/bin/docker --version)"
+                    else
+                        echo "❌ Docker not found in PATH or common locations"
+                        echo "Available binaries:"
+                        ls -la /usr/local/bin/ | grep -i docker || echo "No docker binaries found"
+                        exit 1
+                    fi
+
+                    # Check Docker Compose
+                    if command -v docker >/dev/null 2>&1; then
+                        if docker compose version >/dev/null 2>&1; then
+                            echo "✅ Docker Compose found: $(docker compose version)"
+                        else
+                            echo "❌ Docker Compose not available"
+                            exit 1
+                        fi
+                    fi
+
+                    # Check if Docker daemon is running
+                    if docker info >/dev/null 2>&1; then
+                        echo "✅ Docker daemon is running"
+                    else
+                        echo "❌ Docker daemon is not running or not accessible"
+                        echo "Please start Docker Desktop or ensure Docker daemon is running"
+                        exit 1
+                    fi
                 '''
             }
         }
@@ -46,7 +79,7 @@ pipeline {
                                     echo "❌ No composer.json found"
                                     exit 1
                                 fi
-                                
+
                                 # Validate Dockerfiles
                                 if [ -f "dockerfiles/php.dockerfile" ]; then
                                     echo "✅ PHP Dockerfile found"
@@ -54,7 +87,7 @@ pipeline {
                                     echo "❌ PHP Dockerfile not found"
                                     exit 1
                                 fi
-                                
+
                                 if [ -f "dockerfiles/nginx.dockerfile" ]; then
                                     echo "✅ Nginx Dockerfile found"
                                 else
@@ -65,80 +98,64 @@ pipeline {
                         }
                     }
                 }
-                
+
                 stage('Docker Validation') {
                     steps {
                         echo '🐳 Validating Docker configurations...'
                         sh '''
-                            # Check if Docker is available
+                            # Ensure Docker is in PATH
+                            export PATH="/usr/local/bin:$PATH"
+
+                            # Validate Docker Compose file
                             if command -v docker >/dev/null 2>&1; then
-                                echo "✅ Docker found - validating configuration"
                                 docker compose config
                                 echo "✅ Docker Compose configuration is valid"
                             else
-                                echo "⚠️ Docker not available - skipping Docker validation"
-                                echo "✅ Checking docker-compose.yml syntax manually"
-                                if [ -f "docker-compose.yml" ]; then
-                                    echo "✅ docker-compose.yml file exists"
-                                else
-                                    echo "❌ docker-compose.yml not found"
-                                    exit 1
-                                fi
+                                echo "❌ Docker command not found"
+                                exit 1
                             fi
                         '''
                     }
                 }
             }
         }
-        
+
         stage('Build Docker Images') {
             parallel {
                 stage('Build Backend Image') {
                     steps {
                         echo '🏗️ Building Laravel backend Docker image...'
-                        sh '''
-                            if command -v docker >/dev/null 2>&1; then
-                                echo "✅ Docker found - building backend image"
-                                docker build -f back-end/dockerfiles/php.dockerfile \
-                                    --build-arg UID=1000 \
-                                    --build-arg GID=1000 \
-                                    --build-arg USER=laravel \
-                                    -t ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest \
-                                    -t ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:jenkins-${BUILD_NUMBER} \
-                                    back-end
-                                echo "✅ Backend image built successfully"
-                            else
-                                echo "⚠️ Docker not available - simulating build"
-                                echo "✅ Would build: ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest"
-                            fi
-                        '''
+                        script {
+                            def backendImage = docker.build(
+                                "${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:${BUILD_NUMBER}",
+                                "-f back-end/dockerfiles/php.dockerfile back-end"
+                            )
+
+                            // Tag as latest
+                            backendImage.tag("${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest")
+                            backendImage.tag("${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:jenkins-${BUILD_NUMBER}")
+                        }
                     }
                 }
-                
+
                 stage('Build Nginx Image') {
                     steps {
                         echo '🏗️ Building Nginx Docker image...'
-                        sh '''
-                            if command -v docker >/dev/null 2>&1; then
-                                echo "✅ Docker found - building nginx image"
-                                docker build -f back-end/dockerfiles/nginx.dockerfile \
-                                    --build-arg UID=1000 \
-                                    --build-arg GID=1000 \
-                                    --build-arg USER=laravel \
-                                    -t ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest \
-                                    -t ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:jenkins-${BUILD_NUMBER} \
-                                    back-end
-                                echo "✅ Nginx image built successfully"
-                            else
-                                echo "⚠️ Docker not available - simulating build"
-                                echo "✅ Would build: ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest"
-                            fi
-                        '''
+                        script {
+                            def nginxImage = docker.build(
+                                "${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:${BUILD_NUMBER}",
+                                "-f back-end/dockerfiles/nginx.dockerfile back-end"
+                            )
+
+                            // Tag as latest
+                            nginxImage.tag("${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest")
+                            nginxImage.tag("${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:jenkins-${BUILD_NUMBER}")
+                        }
                     }
                 }
             }
         }
-        
+
         stage('Test Images') {
             steps {
                 echo '🧪 Testing built Docker images...'
@@ -146,14 +163,14 @@ pipeline {
                     # Test backend image
                     echo "Testing backend image..."
                     docker run --rm ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:${BUILD_NUMBER} php --version
-                    
-                    # Test nginx image  
+
+                    # Test nginx image
                     echo "Testing nginx image..."
                     docker run --rm ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:${BUILD_NUMBER} nginx -t
                 '''
             }
         }
-        
+
         stage('Push to Docker Hub') {
             steps {
                 echo '📤 Pushing Docker images to Docker Hub...'
@@ -165,7 +182,7 @@ pipeline {
                             docker push ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest
                             docker push ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:jenkins-${BUILD_NUMBER}
                         """
-                        
+
                         // Push nginx images
                         sh """
                             docker push ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:${BUILD_NUMBER}
@@ -176,43 +193,43 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy to Environment') {
             steps {
                 echo '🚀 Deploying backend services...'
                 sh '''
                     # Stop existing containers
                     docker compose down || true
-                    
+
                     # Pull latest images
                     docker pull ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest
                     docker pull ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest
-                    
+
                     # Start services with latest images
                     docker compose up -d mysql redis
-                    
+
                     # Wait for database to be ready
                     sleep 30
-                    
+
                     # Start backend services
                     docker compose up -d backend nginx
-                    
+
                     # Wait for services to start
                     sleep 15
-                    
+
                     # Run database migrations
                     docker compose exec -T backend php artisan migrate --force || echo "Migrations skipped"
                 '''
             }
         }
-        
+
         stage('Health Check') {
             steps {
                 echo '🏥 Performing health checks...'
                 sh '''
                     # Wait for services to be fully ready
                     sleep 10
-                    
+
                     # Check backend health
                     if curl -f http://localhost:8000/api/health; then
                         echo "✅ Backend health check passed"
@@ -220,24 +237,23 @@ pipeline {
                         echo "❌ Backend health check failed"
                         exit 1
                     fi
-                    
+
                     # Check container status
                     docker compose ps
                 '''
             }
         }
     }
-    
+
     post {
         always {
             echo '🧹 Cleaning up...'
             sh '''
-                # Clean up dangling images (if Docker is available)
+                # Clean up dangling images (only if docker is available)
                 if command -v docker >/dev/null 2>&1; then
-                    echo "✅ Docker found - cleaning up images"
-                    docker image prune -f || echo "⚠️ Image cleanup failed"
+                    docker image prune -f || echo "Failed to prune images, continuing..."
                 else
-                    echo "⚠️ Docker not available - skipping cleanup"
+                    echo "Docker not available, skipping image cleanup"
                 fi
             '''
         }
@@ -249,11 +265,11 @@ pipeline {
             ✅ Laravel backend deployed successfully
             ✅ Images pushed to Docker Hub
             ✅ Health checks passed
-            
+
             🔗 Backend API: http://localhost:8000/api/health
             🐳 Docker Hub: https://hub.docker.com/u/blackdreamer
             '''
-            
+
             // Optional: Send notification
             // emailext (
             //     subject: "✅ Backend Pipeline Success - Build #${BUILD_NUMBER}",
@@ -261,20 +277,20 @@ pipeline {
             //     to: "${env.CHANGE_AUTHOR_EMAIL}"
             // )
         }
-        
+
         failure {
             echo '''
             ❌ Backend Pipeline Failed!
             ===========================
             Please check the logs for details.
-            
+
             Common issues:
             - Docker Hub authentication
             - Database connection
             - Missing environment variables
             - Port conflicts
             '''
-            
+
             // Optional: Send failure notification
             // emailext (
             //     subject: "❌ Backend Pipeline Failed - Build #${BUILD_NUMBER}",
@@ -282,7 +298,7 @@ pipeline {
             //     to: "${env.CHANGE_AUTHOR_EMAIL}"
             // )
         }
-        
+
         unstable {
             echo '⚠️ Backend Pipeline Unstable - Some tests failed but build continued'
         }
