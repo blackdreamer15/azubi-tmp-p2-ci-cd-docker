@@ -188,7 +188,16 @@ pipeline {
             steps {
                 echo '🚀 Deploying backend services...'
                 sh '''
+                    # Stop current project containers
                     (docker compose down --remove-orphans || docker-compose down --remove-orphans) || true
+                    
+                    # Stop any conflicting containers that might be using the same ports
+                    docker ps -q --filter "name=azubi-tmp-p2-ci-cd-docker-mysql" | xargs -r docker stop || true
+                    docker ps -q --filter "name=azubi-tmp-p2-ci-cd-docker-redis" | xargs -r docker stop || true
+                    
+                    # Ensure no containers are using ports 3306 and 6379
+                    docker ps --filter "publish=3306" -q | xargs -r docker stop || true
+                    docker ps --filter "publish=6379" -q | xargs -r docker stop || true
 
                     docker pull ${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest
                     docker pull ${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest
