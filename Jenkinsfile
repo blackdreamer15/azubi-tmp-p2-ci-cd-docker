@@ -275,13 +275,31 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def description = "**Laravel Backend CI/CD completed successfully!**\n\n**✅ Achievements:**\n• Code validation passed\n• Tests executed\n• Docker images built\n• Images pushed to Docker Hub\n• Deployed to environment\n• Health checks passed\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n• Images: `${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest`\n         `${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest`"
+                    // Create description with proper newlines
+                    def descriptionLines = [
+                        "**Laravel Backend CI/CD completed successfully!**",
+                        "",
+                        "**✅ Achievements:**",
+                        "• Code validation passed",
+                        "• Tests executed", 
+                        "• Docker images built",
+                        "• Images pushed to Docker Hub",
+                        "• Deployed to environment",
+                        "• Health checks passed",
+                        "",
+                        "**📊 Build Details:**",
+                        "• Build: #${BUILD_NUMBER}",
+                        "• Commit: ${COMMIT_SHA}",
+                        "• Branch: ${GIT_BRANCH}",
+                        "• Images: `${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest`",
+                        "         `${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest`"
+                    ]
+                    def description = descriptionLines.join("\\n")
                     
-                    writeFile file: 'discord-payload.json', text: """
-{
+                    writeFile file: 'discord-payload.json', text: """{
   "embeds": [{
     "title": "🎉 Backend Pipeline Success!",
-    "description": "${description.replace('"', '\\"')}",
+    "description": "${description}",
     "color": 65280,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
@@ -314,13 +332,30 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def description = "**Laravel Backend CI/CD pipeline encountered an error!**\n\n**🚨 Common Issues:**\n• Docker Hub credentials\n• Build failures\n• Missing dependencies\n• Health check timeouts\n• Port conflicts\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n\n[View Jenkins Logs](${BUILD_URL}console) for detailed information."
+                    // Create description with proper newlines
+                    def descriptionLines = [
+                        "**Laravel Backend CI/CD pipeline encountered an error!**",
+                        "",
+                        "**🚨 Common Issues:**",
+                        "• Docker Hub credentials",
+                        "• Build failures",
+                        "• Missing dependencies", 
+                        "• Health check timeouts",
+                        "• Port conflicts",
+                        "",
+                        "**📊 Build Details:**",
+                        "• Build: #${BUILD_NUMBER}",
+                        "• Commit: ${COMMIT_SHA}",
+                        "• Branch: ${GIT_BRANCH}",
+                        "",
+                        "[View Jenkins Logs](${BUILD_URL}console) for detailed information."
+                    ]
+                    def description = descriptionLines.join("\\n")
                     
-                    writeFile file: 'discord-payload.json', text: """
-{
+                    writeFile file: 'discord-payload.json', text: """{
   "embeds": [{
     "title": "❌ Backend Pipeline Failed!",
-    "description": "${description.replace('"', '\\"')}",
+    "description": "${description}",
     "color": 16711680,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
@@ -343,13 +378,28 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def description = "**Laravel Backend pipeline completed with warnings!**\n\n**⚠️ Issues:**\n• Some tests failed\n• Non-critical warnings occurred\n• Deployment may be partial\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n\n[View Jenkins Logs](${BUILD_URL}console) for more information."
+                    // Create description with proper newlines
+                    def descriptionLines = [
+                        "**Laravel Backend pipeline completed with warnings!**",
+                        "",
+                        "**⚠️ Issues:**",
+                        "• Some tests failed",
+                        "• Non-critical warnings occurred",
+                        "• Deployment may be partial",
+                        "",
+                        "**📊 Build Details:**",
+                        "• Build: #${BUILD_NUMBER}",
+                        "• Commit: ${COMMIT_SHA}",
+                        "• Branch: ${GIT_BRANCH}",
+                        "",
+                        "[View Jenkins Logs](${BUILD_URL}console) for more information."
+                    ]
+                    def description = descriptionLines.join("\\n")
                     
-                    writeFile file: 'discord-payload.json', text: """
-{
+                    writeFile file: 'discord-payload.json', text: """{
   "embeds": [{
     "title": "⚠️ Backend Pipeline Unstable",
-    "description": "${description.replace('"', '\\"')}",
+    "description": "${description}",
     "color": 16776960,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
