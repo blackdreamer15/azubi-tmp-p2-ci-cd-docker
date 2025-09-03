@@ -275,11 +275,13 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def message = """
+                    def description = "**Laravel Backend CI/CD completed successfully!**\n\n**✅ Achievements:**\n• Code validation passed\n• Tests executed\n• Docker images built\n• Images pushed to Docker Hub\n• Deployed to environment\n• Health checks passed\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n• Images: `${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest`\n         `${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest`"
+                    
+                    writeFile file: 'discord-payload.json', text: """
 {
   "embeds": [{
     "title": "🎉 Backend Pipeline Success!",
-    "description": "**Laravel Backend CI/CD completed successfully!**\\n\\n**✅ Achievements:**\\n• Code validation passed\\n• Tests executed\\n• Docker images built\\n• Images pushed to Docker Hub\\n• Deployed to environment\\n• Health checks passed\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n• Images: \`${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest\`\\n         \`${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest\`",
+    "description": "${description.replace('"', '\\"')}",
     "color": 65280,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
@@ -288,7 +290,9 @@ pipeline {
     }
   }]
 }"""
-                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
+                    
+                    sh "curl -H 'Content-Type: application/json' -X POST --data @discord-payload.json '${discordWebhook}'"
+                    sh "rm -f discord-payload.json"
                 }
             }
         }
@@ -310,11 +314,13 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def message = """
+                    def description = "**Laravel Backend CI/CD pipeline encountered an error!**\n\n**🚨 Common Issues:**\n• Docker Hub credentials\n• Build failures\n• Missing dependencies\n• Health check timeouts\n• Port conflicts\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n\n[View Jenkins Logs](${BUILD_URL}console) for detailed information."
+                    
+                    writeFile file: 'discord-payload.json', text: """
 {
   "embeds": [{
     "title": "❌ Backend Pipeline Failed!",
-    "description": "**Laravel Backend CI/CD pipeline encountered an error!**\\n\\n**🚨 Common Issues:**\\n• Docker Hub credentials\\n• Build failures\\n• Missing dependencies\\n• Health check timeouts\\n• Port conflicts\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n\\n[View Jenkins Logs](${BUILD_URL}console) for detailed information.",
+    "description": "${description.replace('"', '\\"')}",
     "color": 16711680,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
@@ -323,7 +329,9 @@ pipeline {
     }
   }]
 }"""
-                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
+                    
+                    sh "curl -H 'Content-Type: application/json' -X POST --data @discord-payload.json '${discordWebhook}'"
+                    sh "rm -f discord-payload.json"
                 }
             }
         }
@@ -335,11 +343,13 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    def message = """
+                    def description = "**Laravel Backend pipeline completed with warnings!**\n\n**⚠️ Issues:**\n• Some tests failed\n• Non-critical warnings occurred\n• Deployment may be partial\n\n**📊 Build Details:**\n• Build: #${BUILD_NUMBER}\n• Commit: ${COMMIT_SHA}\n• Branch: ${GIT_BRANCH}\n\n[View Jenkins Logs](${BUILD_URL}console) for more information."
+                    
+                    writeFile file: 'discord-payload.json', text: """
 {
   "embeds": [{
     "title": "⚠️ Backend Pipeline Unstable",
-    "description": "**Laravel Backend pipeline completed with warnings!**\\n\\n**⚠️ Issues:**\\n• Some tests failed\\n• Non-critical warnings occurred\\n• Deployment may be partial\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n\\n[View Jenkins Logs](${BUILD_URL}console) for more information.",
+    "description": "${description.replace('"', '\\"')}",
     "color": 16776960,
     "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
     "footer": {
@@ -348,7 +358,9 @@ pipeline {
     }
   }]
 }"""
-                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
+                    
+                    sh "curl -H 'Content-Type: application/json' -X POST --data @discord-payload.json '${discordWebhook}'"
+                    sh "rm -f discord-payload.json"
                 }
             }
         }
