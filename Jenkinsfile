@@ -275,23 +275,20 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    sh """
-                        curl -H "Content-Type: application/json" \\
-                        -X POST \\
-                        -d '{
-                            "embeds": [{
-                                "title": "🎉 Backend Pipeline Success!",
-                                "description": "**Laravel Backend CI/CD completed successfully!**\\n\\n**✅ Achievements:**\\n• Code validation passed\\n• Tests executed\\n• Docker images built\\n• Images pushed to Docker Hub\\n• Deployed to environment\\n• Health checks passed\\n\\n**📊 Build Details:**\\n• Build: #\${BUILD_NUMBER}\\n• Commit: \${COMMIT_SHA}\\n• Branch: \${GIT_BRANCH}\\n• Images: \\\`\${DOCKER_HUB_USERNAME}/\${BACKEND_IMAGE_NAME}:latest\\\`\\n         \\\`\${DOCKER_HUB_USERNAME}/\${NGINX_IMAGE_NAME}:latest\\\`",
-                                "color": 65280,
-                                "timestamp": "'\$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
-                                "footer": {
-                                    "text": "Jenkins Pipeline",
-                                    "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
-                                }
-                            }]
-                        }' \\
-                        "\${discordWebhook}"
-                    """
+                    def message = """
+{
+  "embeds": [{
+    "title": "🎉 Backend Pipeline Success!",
+    "description": "**Laravel Backend CI/CD completed successfully!**\\n\\n**✅ Achievements:**\\n• Code validation passed\\n• Tests executed\\n• Docker images built\\n• Images pushed to Docker Hub\\n• Deployed to environment\\n• Health checks passed\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n• Images: \`${DOCKER_HUB_USERNAME}/${BACKEND_IMAGE_NAME}:latest\`\\n         \`${DOCKER_HUB_USERNAME}/${NGINX_IMAGE_NAME}:latest\`",
+    "color": 65280,
+    "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
+    "footer": {
+      "text": "Jenkins Pipeline",
+      "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
+    }
+  }]
+}"""
+                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
                 }
             }
         }
@@ -313,23 +310,20 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    sh """
-                        curl -H "Content-Type: application/json" \\
-                        -X POST \\
-                        -d '{
-                            "embeds": [{
-                                "title": "❌ Backend Pipeline Failed!",
-                                "description": "**Laravel Backend CI/CD pipeline encountered an error!**\\n\\n**🚨 Common Issues:**\\n• Docker Hub credentials\\n• Build failures\\n• Missing dependencies\\n• Health check timeouts\\n• Port conflicts\\n\\n**📊 Build Details:**\\n• Build: #\${BUILD_NUMBER}\\n• Commit: \${COMMIT_SHA}\\n• Branch: \${GIT_BRANCH}\\n\\n[View Jenkins Logs](\${BUILD_URL}console) for detailed information.",
-                                "color": 16711680,
-                                "timestamp": "'\$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
-                                "footer": {
-                                    "text": "Jenkins Pipeline",
-                                    "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
-                                }
-                            }]
-                        }' \\
-                        "\${discordWebhook}"
-                    """
+                    def message = """
+{
+  "embeds": [{
+    "title": "❌ Backend Pipeline Failed!",
+    "description": "**Laravel Backend CI/CD pipeline encountered an error!**\\n\\n**🚨 Common Issues:**\\n• Docker Hub credentials\\n• Build failures\\n• Missing dependencies\\n• Health check timeouts\\n• Port conflicts\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n\\n[View Jenkins Logs](${BUILD_URL}console) for detailed information.",
+    "color": 16711680,
+    "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
+    "footer": {
+      "text": "Jenkins Pipeline",
+      "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
+    }
+  }]
+}"""
+                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
                 }
             }
         }
@@ -341,23 +335,20 @@ pipeline {
             script {
                 def discordWebhook = env.DISCORD_WEBHOOK
                 if (discordWebhook) {
-                    sh """
-                        curl -H "Content-Type: application/json" \\
-                        -X POST \\
-                        -d '{
-                            "embeds": [{
-                                "title": "⚠️ Backend Pipeline Unstable",
-                                "description": "**Laravel Backend pipeline completed with warnings!**\\n\\n**⚠️ Issues:**\\n• Some tests failed\\n• Non-critical warnings occurred\\n• Deployment may be partial\\n\\n**📊 Build Details:**\\n• Build: #\${BUILD_NUMBER}\\n• Commit: \${COMMIT_SHA}\\n• Branch: \${GIT_BRANCH}\\n\\n[View Jenkins Logs](\${BUILD_URL}console) for more information.",
-                                "color": 16776960,
-                                "timestamp": "'\$(date -u +%Y-%m-%dT%H:%M:%S.%3NZ)'",
-                                "footer": {
-                                    "text": "Jenkins Pipeline",
-                                    "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
-                                }
-                            }]
-                        }' \\
-                        "\${discordWebhook}"
-                    """
+                    def message = """
+{
+  "embeds": [{
+    "title": "⚠️ Backend Pipeline Unstable",
+    "description": "**Laravel Backend pipeline completed with warnings!**\\n\\n**⚠️ Issues:**\\n• Some tests failed\\n• Non-critical warnings occurred\\n• Deployment may be partial\\n\\n**📊 Build Details:**\\n• Build: #${BUILD_NUMBER}\\n• Commit: ${COMMIT_SHA}\\n• Branch: ${GIT_BRANCH}\\n\\n[View Jenkins Logs](${BUILD_URL}console) for more information.",
+    "color": 16776960,
+    "timestamp": "${new Date().format('yyyy-MM-dd\'T\'HH:mm:ss.SSS\'Z\'')}",
+    "footer": {
+      "text": "Jenkins Pipeline",
+      "icon_url": "https://www.jenkins.io/images/logos/jenkins/jenkins.png"
+    }
+  }]
+}"""
+                    sh "curl -H 'Content-Type: application/json' -X POST -d '${message}' '${discordWebhook}'"
                 }
             }
         }
