@@ -1,30 +1,24 @@
-name: Docker Build and Push CI/CD
+name: Frontend CI/CD Pipeline
 
 on:
   push:
     branches: [main, develop]
     paths:
       - "front-end/**"
-      - "back-end/**"
-      - "docker-compose.yml"
       - ".github/workflows/**"
   pull_request:
     branches: [main]
     paths:
       - "front-end/**"
-      - "back-end/**"
-      - "docker-compose.yml"
       - ".github/workflows/**"
   workflow_dispatch: # Allow manual trigger
 
 env:
   DOCKER_HUB_USERNAME: blackdreamer
   FRONTEND_IMAGE_NAME: azubi-tmp-p2-ci-cd-docker-frontend
-  BACKEND_IMAGE_NAME: azubi-tmp-p2-ci-cd-docker-backend
-  NGINX_IMAGE_NAME: azubi-tmp-p2-ci-cd-docker-nginx
 
 jobs:
-  # Job 1: Build and Push Frontend
+  # Job 1: Build and Push Frontend Only
   build-frontend:
     name: Build & Push Frontend
     runs-on: ubuntu-latest
@@ -67,123 +61,31 @@ jobs:
           build-args: |
             SECRET_COOKIE_PASSWORD=${{ secrets.SECRET_COOKIE_PASSWORD }}
 
-  # Job 2: Build and Push Backend
-  build-backend:
-    name: Build & Push Backend
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Backend Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./back-end
-          file: ./back-end/dockerfiles/php.dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            UID=1000
-            GID=1000
-            USER=laravel
-
-  # Job 3: Build and Push Nginx
-  build-nginx:
-    name: Build & Push Nginx
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ env.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.NGINX_IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha,prefix=sha-
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Nginx Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./back-end
-          file: ./back-end/dockerfiles/nginx.dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          platforms: linux/amd64,linux/arm64
-          build-args: |
-            UID=1000
-            GID=1000
-            USER=laravel
-
-  # Job 4: Notify Success
+  # Job 2: Notify Success
   notify-success:
-    name: Notify Build Success
+    name: Frontend Build Success
     runs-on: ubuntu-latest
-    needs: [build-frontend, build-backend, build-nginx]
+    needs: [build-frontend]
     if: success()
 
     steps:
       - name: Build Success Notification
         run: |
-          echo "🎉 All Docker images built and pushed successfully!"
+          echo "🎉 Frontend Docker image built and pushed successfully!"
           echo "✅ Frontend: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}"
-          echo "✅ Backend: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.BACKEND_IMAGE_NAME }}"
-          echo "✅ Nginx: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.NGINX_IMAGE_NAME }}"
           echo "🚀 Ready for deployment!"
 
-  # Job 5: Notify Failure
+  # Job 3: Notify Failure
   notify-failure:
-    name: Notify Build Failure
+    name: Frontend Build Failure
     runs-on: ubuntu-latest
-    needs: [build-frontend, build-backend, build-nginx]
+    needs: [build-frontend]
     if: failure()
 
     steps:
       - name: Build Failure Notification
         run: |
-          echo "❌ Docker build pipeline failed!"
+          echo "❌ Frontend Docker build pipeline failed!"
           echo "Please check the logs for more details."
           echo "Common issues:"
           echo "- Docker Hub credentials"
