@@ -79,7 +79,7 @@ jobs:
             **Frontend Docker image built and pushed successfully!**
             ✅ **Image**: `${{ env.DOCKER_HUB_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest`
             🚀 **Ready for deployment!**
-            
+
             **Build Details:**
             • Branch: `${{ github.ref_name }}`
             • Commit: `${{ github.sha }}`
@@ -104,17 +104,17 @@ jobs:
           title: "❌ Frontend Build Failed!"
           description: |
             **Frontend Docker build pipeline failed!**
-            
+
             **Common issues:**
             • Docker Hub credentials
             • Dockerfile syntax errors  
             • Build context problems
-            
+
             **Build Details:**
             • Branch: `${{ github.ref_name }}`
             • Commit: `${{ github.sha }}`
             • Workflow: ${{ github.workflow }}
-            
+
             Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
           color: 0xff0000
           username: "GitHub Actions"
