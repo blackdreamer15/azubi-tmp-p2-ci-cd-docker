@@ -1,3 +1,6 @@
+// Jenkins Pipeline for Backend CI/CD (Laravel + Nginx)
+// This pipeline handles the complete backend build, test, and deployment process
+
 pipeline {
     agent any
 
@@ -8,13 +11,20 @@ pipeline {
         NGINX_IMAGE_NAME = 'azubi-tmp-p2-ci-cd-docker-nginx'
         GIT_REPO = 'https://github.com/blackdreamer15/azubi-tmp-p2-ci-cd-docker.git'
         PATH = "/usr/local/bin:/opt/homebrew/bin:${env.PATH}"
+        BUILD_NUMBER = "${env.BUILD_NUMBER}"
+        COMMIT_SHA = "${env.GIT_COMMIT?.take(8) ?: 'unknown'}"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo '🔄 Checking out Laravel backend code...'
+                echo '🔄 Checking out backend code from repository...'
                 checkout scm
+                sh '''
+                    echo "Repository: ${GIT_REPO}"
+                    echo "Branch: ${GIT_BRANCH}"
+                    echo "Commit: ${GIT_COMMIT}"
+                '''
             }
         }
 
