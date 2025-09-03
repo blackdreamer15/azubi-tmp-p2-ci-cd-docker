@@ -61,34 +61,61 @@ jobs:
           build-args: |
             SECRET_COOKIE_PASSWORD=${{ secrets.SECRET_COOKIE_PASSWORD }}
 
-  # Job 2: Notify Success
-  notify-success:
-    name: Frontend Build Success
+  # Job 2: Discord Success Notification
+  notify-discord-success:
+    name: Discord Success Notification
     runs-on: ubuntu-latest
     needs: [build-frontend]
     if: success()
 
     steps:
-      - name: Build Success Notification
-        run: |
-          echo "🎉 Frontend Docker image built and pushed successfully!"
-          echo "✅ Frontend: ${{ env.DOCKER_HUB_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}"
-          echo "🚀 Ready for deployment!"
+      - name: Discord Success Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "🎉 Frontend Build Successful!"
+          description: |
+            **Frontend Docker image built and pushed successfully!**
+            ✅ **Image**: `${{ env.DOCKER_HUB_USERNAME }}/${{ env.FRONTEND_IMAGE_NAME }}:latest`
+            🚀 **Ready for deployment!**
+            
+            **Build Details:**
+            • Branch: `${{ github.ref_name }}`
+            • Commit: `${{ github.sha }}`
+            • Workflow: ${{ github.workflow }}
+          color: 0x00ff00
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
 
-  # Job 3: Notify Failure
-  notify-failure:
-    name: Frontend Build Failure
+  # Job 3: Discord Failure Notification
+  notify-discord-failure:
+    name: Discord Failure Notification
     runs-on: ubuntu-latest
     needs: [build-frontend]
     if: failure()
 
     steps:
-      - name: Build Failure Notification
-        run: |
-          echo "❌ Frontend Docker build pipeline failed!"
-          echo "Please check the logs for more details."
-          echo "Common issues:"
-          echo "- Docker Hub credentials"
-          echo "- Dockerfile syntax errors"
-          echo "- Build context problems"
-          exit 1
+      - name: Discord Failure Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          title: "❌ Frontend Build Failed!"
+          description: |
+            **Frontend Docker build pipeline failed!**
+            
+            **Common issues:**
+            • Docker Hub credentials
+            • Dockerfile syntax errors  
+            • Build context problems
+            
+            **Build Details:**
+            • Branch: `${{ github.ref_name }}`
+            • Commit: `${{ github.sha }}`
+            • Workflow: ${{ github.workflow }}
+            
+            Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for more details.
+          color: 0xff0000
+          username: "GitHub Actions"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
