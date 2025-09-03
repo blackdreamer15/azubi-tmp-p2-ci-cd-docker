@@ -48,3 +48,67 @@ jobs:
         run: |
           echo "✅ Checking Frontend Dockerfile..."
           docker build --no-cache -f front-end/Dockerfile front-end --dry-run 2>/dev/null || docker build -t test-frontend -f front-end/Dockerfile front-end --build-arg SECRET_COOKIE_PASSWORD="${{ secrets.SECRET_COOKIE_PASSWORD }}"
+
+  # Job 2: Discord Success Notification for Code Quality
+  notify-discord-quality-success:
+    name: Discord Code Quality Success
+    runs-on: ubuntu-latest
+    needs: [frontend-quality]
+    if: success()
+
+    steps:
+      - name: Discord Quality Success Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: "✅ Frontend Code Quality Passed!"
+          description: |
+            **Frontend code quality checks completed successfully!**
+            
+            **✅ Achievements:**
+            • Dependencies installed
+            • Lint checks passed
+            • Build successful
+            • Dockerfile validated
+            
+            **Build Details:**
+            • Branch: `${{ github.ref_name }}`
+            • Commit: `${{ github.sha }}`
+            • Workflow: ${{ github.workflow }}
+          color: 0x00ff00
+          username: "GitHub Actions - Quality"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+
+  # Job 3: Discord Failure Notification for Code Quality
+  notify-discord-quality-failure:
+    name: Discord Code Quality Failure
+    runs-on: ubuntu-latest
+    needs: [frontend-quality]
+    if: failure()
+
+    steps:
+      - name: Discord Quality Failure Notification
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          title: "❌ Frontend Code Quality Failed!"
+          description: |
+            **Frontend code quality checks failed!**
+            
+            **Common Issues:**
+            • Linting errors
+            • Build failures
+            • Dependency issues
+            • Dockerfile problems
+            
+            **Build Details:**
+            • Branch: `${{ github.ref_name }}`
+            • Commit: `${{ github.sha }}`
+            • Workflow: ${{ github.workflow }}
+            
+            Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          color: 0xff0000
+          username: "GitHub Actions - Quality"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
