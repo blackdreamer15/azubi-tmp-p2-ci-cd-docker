@@ -1,16 +1,22 @@
-name: Code Quality and Testing
+name: Frontend Code Quality and Testing
 
 on:
   push:
     branches: [main, develop]
+    paths:
+      - "front-end/**"
+      - ".github/workflows/**"
   pull_request:
     branches: [main]
+    paths:
+      - "front-end/**"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 jobs:
-  # Job 1: Frontend Code Quality
+  # Job 1: Frontend Code Quality & Testing
   frontend-quality:
-    name: Frontend Code Quality
+    name: Frontend Code Quality & Testing
     runs-on: ubuntu-latest
 
     steps:
@@ -38,93 +44,7 @@ jobs:
         env:
           SECRET_COOKIE_PASSWORD: ${{ secrets.SECRET_COOKIE_PASSWORD }}
 
-  # Job 2: Backend Code Quality
-  backend-quality:
-    name: Backend Code Quality
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.3"
-          extensions: pdo, pdo_mysql, redis, gd, zip, exif
-          coverage: none
-
-      - name: Validate Composer files
-        working-directory: ./back-end
-        run: composer validate --strict
-
-      - name: Cache Composer dependencies
-        uses: actions/cache@v3
-        with:
-          path: back-end/vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-php-
-
-      - name: Install Backend dependencies
-        working-directory: ./back-end
-        run: composer install --prefer-dist --no-progress --no-dev --optimize-autoloader
-
-      - name: Check Laravel configuration
-        working-directory: ./back-end
-        run: |
-          cp .env.example .env || echo "No .env.example found"
-          php artisan config:clear || echo "Config clear failed"
-
-  # Job 3: Docker Compose Validation
-  docker-validation:
-    name: Docker Compose Validation
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Validate Docker Compose file
-        run: docker compose config
-
-      - name: Check Dockerfile syntax
+      - name: Test Frontend Dockerfile
         run: |
           echo "✅ Checking Frontend Dockerfile..."
           docker build --no-cache -f front-end/Dockerfile front-end --dry-run 2>/dev/null || docker build -t test-frontend -f front-end/Dockerfile front-end --build-arg SECRET_COOKIE_PASSWORD="${{ secrets.SECRET_COOKIE_PASSWORD }}"
-
-          echo "✅ Checking Backend Dockerfile..."
-          docker build --no-cache -f back-end/dockerfiles/php.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-backend -f back-end/dockerfiles/php.dockerfile back-end --build-arg UID=1000 --build-arg GID=1000 --build-arg USER=laravel
-
-          echo "✅ Checking Nginx Dockerfile..."
-          docker build --no-cache -f back-end/dockerfiles/nginx.dockerfile back-end --dry-run 2>/dev/null || docker build -t test-nginx -f back-end/dockerfiles/nginx.dockerfile back-end --build-arg UID=1000 --build-arg GID=1000 --build-arg USER=laravel
-
-  # Job 4: Security Scanning
-  security-scan:
-    name: Security Scanning
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "sarif"
-          output: "trivy-results.sarif"
-
-      - name: Run Trivy vulnerability scanner (console output)
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "table"
-
-      - name: Upload Trivy scan results
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        continue-on-error: true
-        with:
-          sarif_file: "trivy-results.sarif"
