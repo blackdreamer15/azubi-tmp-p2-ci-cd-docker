@@ -1,14 +1,13 @@
 # Full-Stack Application with Docker & CI/CD
 
-A modern full-stack application featuring a Next## � - **[🚀 JENKINS_SETUP.md](./JENKINS_SETUP.md)** - Complete Jenkins setup guide
+A modern full-stack application featuring a Next.js frontend and Laravel backend, containerized with Docker and automated with CI/CD pipelines. This project implements complete DevOps practices including containerization, automated testing, CI/CD pipelines, and deployment automation.
 
-- **[⚙️ GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - GitHub Actions configuration
-- **[📡 DISCORD_NOTIFICATIONS_SETUP.md](./DISCORD_NOTIFICATIONS_SETUP.md)** - Discord webhook setup
-- **[🔧 scripts/](./scripts/)** - Automation scripts documentationDocumentation
+## 📚 Key Documentation
 
-- **[� JENKINS_SETUP.md](./JENKINS_SETUP.md)** - Complete Jenkins setup guide
-- **[⚙️ GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - GitHub Actions configuration
-- **[� DISCORD_NOTIFICATIONS_SETUP.md](./DISCORD_NOTIFICATIONS_SETUP.md)** - Discord webhook setupontend and Laravel backend, containerized with Docker and automated with CI/CD pipelines. This project implements complete DevOps practices including containerization, automated testing, CI/CD pipelines, and deployment automation.
+- **[🚀 JENKINS_SETUP.md](./docs/JENKINS_SETUP.md)** - Complete Jenkins setup guide
+- **[⚙️ GITHUB_ACTIONS_SETUP.md](./docs/GITHUB_ACTIONS_SETUP.md)** - GitHub Actions configuration
+- **[� DISCORD_NOTIFICATIONS_SETUP.md](./docs/DISCORD_NOTIFICATIONS_SETUP.md)** - Discord webhook setup
+- **[�🔧 scripts/](./scripts/)** - Automation scripts documentation
 
 ## 🏗️ Tech Stack
 
@@ -55,7 +54,7 @@ cd azubi-tmp-p2-ci-cd-docker
 
 ```bash
 ├── 📁 front-end/          # Next.js application
-├── 📁 back-end/           # Laravel application  
+├── 📁 back-end/           # Laravel application
 ├── 📁 scripts/            # Automation scripts
 ├── 📁 .github/workflows/  # GitHub Actions CI/CD
 ├── 📄 docker-compose.yml  # Multi-service orchestration
@@ -108,8 +107,9 @@ docker-compose exec backend php artisan db:seed
 ## 📋 Documentation
 
 - **[🔧 scripts/README.md](./scripts/README.md)** - Automation scripts documentation  
-- **[⚙️ JENKINS_SETUP.md](./JENKINS_SETUP.md)** - Jenkins installation and configuration
-- **[🚀 GITHUB_ACTIONS_SETUP.md](./GITHUB_ACTIONS_SETUP.md)** - GitHub Actions CI/CD setup
+- **[🚀 JENKINS_SETUP.md](./docs/JENKINS_SETUP.md)** - Jenkins installation and configuration
+- **[⚙️ GITHUB_ACTIONS_SETUP.md](./docs/GITHUB_ACTIONS_SETUP.md)** - GitHub Actions CI/CD setup
+- **[📡 DISCORD_NOTIFICATIONS_SETUP.md](./docs/DISCORD_NOTIFICATIONS_SETUP.md)** - Discord webhook configuration
 
 ## 🎯 Key Features
 
@@ -127,15 +127,15 @@ Our automated pipelines send real-time Discord notifications for all build and d
 
 ### Frontend CI/CD Notifications
 
-![Frontend Build Success](./frontend-build-notification.png)
+![Frontend Build Success](./assets/frontend-build-notification.png)
 *GitHub Actions - Frontend Docker build and push to registry*
 
-![Code Quality Success](./code-quality-notification.png)
+![Code Quality Success](./assets/code-quality-notification.png)
 *GitHub Actions - Code quality checks and testing*
 
 ### Backend CI/CD Notifications
 
-![Backend Pipeline Success](./backend-pipeline-notification.png)
+![Backend Pipeline Success](./assets/backend-pipeline-notification.png)
 *Jenkins Pipeline - Backend build, test, and deployment*
 
 **📋 Notification Features:**
@@ -148,6 +148,7 @@ Our automated pipelines send real-time Discord notifications for all build and d
 
 ## 🤝 Contributing
 
+1. Fork the repository
 1. Fork the repository
 2. Create a feature branch
 3. Make changes and test thoroughly
