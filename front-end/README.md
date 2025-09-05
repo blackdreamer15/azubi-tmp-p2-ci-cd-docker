@@ -1,5 +1,3 @@
 # Albert Web
 
-Web Portal Interface for the Albert system.
-
-
+Web Portal Interface for the Azubi Africa system.
